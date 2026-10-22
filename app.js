@@ -33,13 +33,13 @@ function updateNavigation() {
   document.querySelector('#gallery-hint').textContent = memories.length > 1 ? 'Swipe to wander through our memories' : 'One moment. A thousand feelings.';
 }
 function pauseDrawing() {
-  cancelAnimationFrame(frameId);
+  clearTimeout(frameId);
   frameId = 0;
   lastFrame = 0;
   portrait.classList.remove('is-playing');
 }
 function finishDrawing() {
-  portrait.classList.add('done');
+  if (!portrait.classList.contains('done')) portrait.classList.add('done');
   if (!completed && elapsed >= revealDuration) {
     completed = true;
     invitation.hidden = false;
@@ -50,20 +50,20 @@ function finishDrawing() {
 function tick(now) {
   frameId = 0;
   if (!inView || document.hidden || letter.open || !ready) {pauseDrawing(); return;}
-  if (lastFrame) elapsed += Math.min(now - lastFrame, 100);
+  if (lastFrame) elapsed += now - lastFrame;
   lastFrame = now;
   if (reducedMotion.matches) elapsed = Math.max(elapsed, revealDuration);
   if (elapsed >= drawingDuration) finishDrawing();
   if (completed && autoplay && memories.length > 1 && elapsed >= revealDuration + 8000) {
     selectMemory(index + 1); return;
   }
-  if (!completed || (autoplay && memories.length > 1)) frameId = requestAnimationFrame(tick);
+  if (!completed || (autoplay && memories.length > 1)) frameId = setTimeout(() => tick(performance.now()), 100);
   else lastFrame = 0;
 }
 function resumeDrawing() {
   if (!inView || !ready || document.hidden || letter.open) return;
   portrait.classList.add('started', 'is-playing');
-  if (!frameId) { lastFrame = 0; frameId = requestAnimationFrame(tick); }
+  if (!frameId) { lastFrame = 0; frameId = setTimeout(() => tick(performance.now()), 100); }
 }
 async function loadMemory() {
   if (loading || !memories.length) return;
@@ -123,6 +123,7 @@ function selectMemory(nextIndex) {
 }
 const observer = new IntersectionObserver(entries => {
   inView = entries[0].isIntersecting && entries[0].intersectionRatio >= .4;
+  portrait.parentElement.classList.toggle('outside-view', !inView);
   if (inView) {
     if (!ready && !loading && !failed) loadMemory();
     else resumeDrawing();
@@ -160,7 +161,7 @@ portrait.addEventListener('touchend', event => {
 }, {passive:true});
 portrait.addEventListener('touchcancel', () => {touchStart = null;}, {passive:true});
 const stars = document.querySelector('#stars');
-for (let i = 0; i < 36; i++) {
+for (let i = 0; i < 18; i++) {
   const star = document.createElement('span');
   star.className = 'star';
   star.style.cssText = `left:${(i*37.71)%100}%;top:${(i*23.13)%100}%;animation-delay:-${i%5}s`;
@@ -168,7 +169,7 @@ for (let i = 0; i < 36; i++) {
 }
 function celebrate() {
   if (reducedMotion.matches) return;
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 10; i++) {
     const heart = document.createElement('span');
     heart.className = 'floating-heart'; heart.textContent = i%2 ? '♡' : '♥';
     heart.style.cssText = `left:${Math.random()*100}%;font-size:${12+Math.random()*20}px;--drift:${Math.random()*140-70}px;animation-delay:${Math.random()*.8}s`;
@@ -197,48 +198,102 @@ letter.addEventListener('click', event => {
   const rect = letter.getBoundingClientRect();
   if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) letter.close();
 });
-document.addEventListener('visibilitychange', () => {if (document.hidden) pauseDrawing(); else resumeDrawing();});
+document.addEventListener('visibilitychange', () => {
+  document.body.classList.toggle('effects-paused', document.hidden);
+  if (document.hidden) pauseDrawing(); else resumeDrawing();
+});
 reducedMotion.addEventListener('change', () => {if (reducedMotion.matches) {autoplay = false; updateNavigation();} resumeDrawing();});
-// A quiet original music-box motif, generated locally. No tracking, audio files or autoplay.
-let audioContext, melodyTimer;
-const activeNotes = new Set();
+// Browsers decide whether audible autoplay is allowed. Try it, then unlock on a
+// real tap/keypress if needed. YouTube pages cannot be used as HTML audio sources.
 const soundButton = document.querySelector('#sound');
+const soundLabel = document.querySelector('#sound-label');
+const audioURL = window.LOVE_AUDIO_URL || '';
+const song = audioURL ? new Audio(audioURL) : null;
+if (song) { song.loop = true; song.preload = 'none'; song.volume = .55; }
+else soundButton.title = 'Temporary music-box melody; the requested audio has not been supplied yet.';
+let audioContext, melodyTimer, musicPlaying = false, musicStarting = false;
+let musicWanted = true, musicEpoch = 0, pausedForVisibility = false;
+const activeNotes = new Set();
 const melody = [261.63,329.63,392,523.25,440,392,329.63,293.66,261.63,329.63,392,440,392,329.63,293.66,261.63];
 let noteIndex = 0;
 function playNote() {
+  if (!audioContext || audioContext.state !== 'running') return;
   const now = audioContext.currentTime;
   const osc = audioContext.createOscillator();
   const gain = audioContext.createGain();
-  osc.type = 'sine';
-  osc.frequency.value = melody[noteIndex++ % melody.length];
+  osc.type = 'sine'; osc.frequency.value = melody[noteIndex++ % melody.length];
   gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(.065, now+.025);
+  gain.gain.linearRampToValueAtTime(.045, now+.025);
   gain.gain.exponentialRampToValueAtTime(.001, now+1.8);
   osc.connect(gain).connect(audioContext.destination);
   activeNotes.add(osc);
   osc.onended = () => {activeNotes.delete(osc); osc.disconnect(); gain.disconnect();};
   osc.start(now); osc.stop(now+1.9);
 }
-function stopMusic() {
-  clearInterval(melodyTimer);
-  activeNotes.forEach(osc => { try { osc.stop(); } catch {} });
-  soundButton.setAttribute('aria-pressed', 'false');
-  document.querySelector('#sound-label').textContent = 'Sound off';
+function setSoundState(playing, label) {
+  musicPlaying = playing;
+  soundButton.setAttribute('aria-pressed', String(playing));
+  soundLabel.textContent = label;
 }
-soundButton.addEventListener('click', async () => {
-  if (soundButton.getAttribute('aria-pressed') === 'true') {stopMusic(); return;}
+function stopMusic(userInitiated = false) {
+  musicEpoch++;
+  musicStarting = false;
+  clearInterval(melodyTimer);
+  activeNotes.forEach(osc => {try {osc.stop();} catch {}});
+  if (song) song.pause();
+  if (userInitiated) musicWanted = false;
+  setSoundState(false, userInitiated ? 'Sound off' : 'Tap for music');
+}
+async function startMusic(fromGesture = false) {
+  if (musicPlaying || musicStarting || document.hidden) return;
+  musicWanted = true;
+  musicStarting = true;
+  const epoch = ++musicEpoch;
   try {
-    const AudioAPI = window.AudioContext || window.webkitAudioContext;
-    if (!AudioAPI) throw new Error('Audio is unavailable');
-    audioContext ||= new AudioAPI();
-    await audioContext.resume();
-    soundButton.setAttribute('aria-pressed', 'true');
-    document.querySelector('#sound-label').textContent = 'Sound on';
-    playNote();
-    melodyTimer = setInterval(playNote, 650);
-  } catch {
-    document.querySelector('#sound-label').textContent = 'Sound unavailable';
-    soundButton.setAttribute('aria-pressed','false');
+    if (song) await song.play();
+    else {
+      const AudioAPI = window.AudioContext || window.webkitAudioContext;
+      if (!AudioAPI) throw new Error('Audio is unavailable');
+      audioContext ||= new AudioAPI();
+      if (audioContext.state !== 'running') {
+        if (fromGesture) await audioContext.resume();
+        else {
+          setSoundState(false, 'Tap for music');
+          return; // Never await a suspended autoplay context: it may never resolve.
+        }
+      }
+    }
+    if (epoch !== musicEpoch || document.hidden) return;
+    if (!song) {playNote(); melodyTimer = setInterval(playNote, 650);}
+    setSoundState(true, 'Sound on');
+  } catch (error) {
+    if (epoch !== musicEpoch) return;
+    const blocked = error.name === 'NotAllowedError' || error.name === 'AbortError';
+    setSoundState(false, blocked ? 'Tap for music' : 'Sound unavailable');
+  } finally {
+    if (epoch === musicEpoch) musicStarting = false;
+  }
+}
+soundButton.addEventListener('click', () => {
+  if (musicPlaying || musicStarting) stopMusic(true);
+  else startMusic(true);
+});
+// Start on the visitor's first genuine interaction if the initial attempt was
+// blocked. Never restart after the visitor deliberately mutes the music.
+function unlockMusic(event) {
+  if (event.target instanceof Element && event.target.closest('#sound')) return;
+  if (event.type === 'keydown' && !['Enter',' '].includes(event.key)) return;
+  if (musicWanted && !musicPlaying && !musicStarting) startMusic(true);
+}
+document.addEventListener('pointerdown', unlockMusic, {passive:true});
+document.addEventListener('keydown', unlockMusic);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    pausedForVisibility = musicPlaying || musicStarting;
+    stopMusic();
+  } else if (pausedForVisibility && musicWanted) {
+    pausedForVisibility = false;
+    startMusic(false);
   }
 });
-document.addEventListener('visibilitychange', () => {if (document.hidden) stopMusic();});
+startMusic(false);

@@ -27,6 +27,7 @@ test('art starts only in view, letter waits for completion, replay resets it',as
  await page.locator('#replay').click();
  await expect(page.locator('#open-letter')).toBeHidden();
  await expect(page.locator('#drawing-status')).toHaveText('Drawing our little forever…');
+ if (await page.locator('#sound').getAttribute('aria-pressed') === 'true') await page.locator('#sound').click();
  await page.locator('#sound').click();
  await expect(page.locator('#sound')).toHaveAttribute('aria-pressed','true');
  await page.locator('#sound').click();
@@ -101,4 +102,41 @@ test('failed SVG falls back to an animated image and still reveals the letter',a
  await page.goto('/');await revealPortrait(page);
  await expect(page.locator('#portrait')).toHaveClass(/is-photo/);
  await expect(page.locator('#open-letter')).toBeVisible();
+});
+async function audioFixture(page, allowAutoplay) {
+ await page.addInitScript(({allowAutoplay}) => {
+   window.__audioStats = {attempts:0,pauses:0,playing:false};
+   window.Audio = class {
+     constructor(src) {this.src=src;}
+     play() {
+       window.__audioStats.attempts++;
+       if (!allowAutoplay && !navigator.userActivation.isActive) return Promise.reject(new DOMException('Tap required','NotAllowedError'));
+       window.__audioStats.playing=true;return Promise.resolve();
+     }
+     pause() {window.__audioStats.pauses++;window.__audioStats.playing=false;}
+   };
+ }, {allowAutoplay});
+ await page.route('**/memories.js',route=>route.fulfill({contentType:'application/javascript',body:`window.LOVE_MEMORIES=[{image:'assets/portrait-gold.webp',drawing:'assets/portrait.svg',alt:'Our portrait',caption:'Our forever'}];window.LOVE_AUDIO_URL='assets/test-song.mp3';`}));
+}
+test('configured song attempts autoplay and falls back to a genuine tap; mute stays muted',async({page})=>{
+ await audioFixture(page,false);
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/');
+ await expect(page.locator('#sound-label')).toHaveText('Tap for music');
+ expect(await page.evaluate(()=>window.__audioStats.attempts)).toBe(1);
+ await page.locator('.discover-link').click();
+ await expect(page.locator('#sound')).toHaveAttribute('aria-pressed','true');
+ await page.locator('#sound').click();
+ await expect(page.locator('#sound')).toHaveAttribute('aria-pressed','false');
+ await page.locator('#replay').click();
+ await expect(page.locator('#sound-label')).toHaveText('Sound off');
+ expect(await page.evaluate(()=>window.__audioStats.playing)).toBe(false);
+});
+test('configured song starts immediately when autoplay is permitted',async({page})=>{
+ await audioFixture(page,true);
+ await page.goto('/');
+ await expect(page.locator('#sound')).toHaveAttribute('aria-pressed','true');
+ expect(await page.evaluate(()=>window.__audioStats.playing)).toBe(true);
+ await page.locator('#sound').click();
+ expect(await page.evaluate(()=>window.__audioStats.playing)).toBe(false);
 });
