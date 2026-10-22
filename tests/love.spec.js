@@ -48,7 +48,7 @@ test('reduced motion reveals immediately on arrival and dialog supports Escape',
  await expect(page.locator('#gallery-count')).toHaveText('01 / 09');
 });
 async function multiMemoryFixture(page) {
- await page.route('**/memories.js',route=>route.fulfill({contentType:'application/javascript',body:`window.LOVE_MEMORIES=[{image:'assets/portrait-rose.png',drawing:'assets/portrait.svg',alt:'First memory',caption:'First memory'},{image:'assets/portrait-rose.png',alt:'Second memory',caption:'Second memory'}];`}));
+ await page.route('**/memories.js*',route=>route.fulfill({contentType:'application/javascript',body:`window.LOVE_MEMORIES=[{image:'assets/portrait-rose.png',drawing:'assets/portrait.svg',alt:'First memory',caption:'First memory'},{image:'assets/portrait-rose.png',alt:'Second memory',caption:'Second memory'}];`}));
 }
 test('multiple photos support arrows, swipe and replay without fake production slides',async({page})=>{
  await multiMemoryFixture(page);
@@ -117,7 +117,7 @@ async function audioFixture(page, allowAutoplay) {
      pause() {window.__audioStats.pauses++;window.__audioStats.playing=false;}
    };
  }, {allowAutoplay});
- await page.route('**/memories.js',route=>route.fulfill({contentType:'application/javascript',body:`window.LOVE_MEMORIES=[{image:'assets/portrait-gold.webp',drawing:'assets/portrait.svg',alt:'Our portrait',caption:'Our forever'}];window.LOVE_AUDIO_URL='assets/test-song.mp3';`}));
+ await page.route('**/memories.js*',route=>route.fulfill({contentType:'application/javascript',body:`window.LOVE_MEMORIES=[{image:'assets/portrait-gold.webp',drawing:'assets/portrait.svg',alt:'Our portrait',caption:'Our forever'}];window.LOVE_AUDIO_URL='assets/test-song.mp3';`}));
 }
 test('configured song attempts autoplay and falls back to a genuine tap; mute stays muted',async({page})=>{
  await audioFixture(page,false);
@@ -150,7 +150,8 @@ test('all eight illustrated portraits decode, have real SVG paths and wrap back 
    await expect(page.locator('#gallery-count')).toHaveText(`${String(i+1).padStart(2,'0')} / 09`);
    await expect(page.locator('#portrait')).toHaveClass(/done/);
    const image=page.locator('#portrait .portrait-finished');
-   await expect(image).toHaveAttribute('src',`assets/portraits/memory-${String(i).padStart(2,'0')}.webp`);
+   const revision = i === 6 ? '' : '?v=soft-smile-1';
+   await expect(image).toHaveAttribute('src',`assets/portraits/memory-${String(i).padStart(2,'0')}.webp${revision}`);
    expect(await image.evaluate(el=>el.complete && el.naturalWidth>0)).toBe(true);
    await expect(image).toHaveCSS('object-fit','contain');
    await expect(page.locator('#portrait')).not.toHaveClass(/is-photo/);
