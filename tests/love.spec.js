@@ -141,7 +141,7 @@ test('configured song starts immediately when autoplay is permitted',async({page
  await page.locator('#sound').click();
  expect(await page.evaluate(()=>window.__audioStats.playing)).toBe(false);
 });
-test('all eight supplied photos decode, preserve full framing and wrap back to the portrait', async({page}) => {
+test('all eight illustrated portraits decode, have real SVG paths and wrap back to the first portrait', async({page}) => {
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto('/');await revealPortrait(page);
  await expect(page.locator('#gallery-dots button')).toHaveCount(9);
@@ -150,9 +150,11 @@ test('all eight supplied photos decode, preserve full framing and wrap back to t
    await expect(page.locator('#gallery-count')).toHaveText(`${String(i+1).padStart(2,'0')} / 09`);
    await expect(page.locator('#portrait')).toHaveClass(/done/);
    const image=page.locator('#portrait .portrait-finished');
-   await expect(image).toHaveAttribute('src',`assets/memories/memory-${String(i).padStart(2,'0')}.webp`);
+   await expect(image).toHaveAttribute('src',`assets/portraits/memory-${String(i).padStart(2,'0')}.webp`);
    expect(await image.evaluate(el=>el.complete && el.naturalWidth>0)).toBe(true);
    await expect(image).toHaveCSS('object-fit','contain');
+   await expect(page.locator('#portrait')).not.toHaveClass(/is-photo/);
+   expect(await page.locator('#portrait svg path').count()).toBeGreaterThan(40);
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  }
  await page.locator('#next-memory').click();
@@ -164,7 +166,7 @@ test('nine-dot gallery fits small phones and does not eagerly download the whole
  await page.setViewportSize({width:320,height:740});
  await page.emulateMedia({reducedMotion:'reduce'});
  const photos=[];
- page.on('request',req=>{if(req.url().includes('/assets/memories/'))photos.push(req.url());});
+ page.on('request',req=>{if(req.url().includes('/assets/portraits/'))photos.push(req.url());});
  await page.goto('/');
  expect(photos).toEqual([]);
  await revealPortrait(page);
@@ -172,4 +174,42 @@ test('nine-dot gallery fits small phones and does not eagerly download the whole
  expect(new Set(photos).size).toBeLessThanOrEqual(1);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await expect(page.locator('#gallery-dots button')).toHaveCount(9);
+});
+test('each new portrait draws before its envelope appears, including after replay',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/');await revealPortrait(page);
+ await expect(page.locator('#open-letter')).toBeVisible();
+ await page.emulateMedia({reducedMotion:'no-preference'});
+ await page.clock.install();
+ for(let i=1;i<=8;i++) {
+   await page.getByRole('button',{name:`View memory ${i+1}`,exact:true}).click();
+   await expect(page.locator('#portrait')).toHaveClass(/started/);
+   expect(await page.locator('#portrait svg path').count()).toBeGreaterThan(40);
+   await expect(page.locator('#open-letter')).toBeHidden();
+   await page.clock.runFor(6100);
+   await expect(page.locator('#open-letter')).toBeHidden();
+   await page.clock.runFor(1600);
+   await expect(page.locator('#open-letter')).toBeVisible();
+   await expect(page.locator('#portrait')).toHaveClass(/done/);
+ }
+ await page.locator('#replay').click();
+ await expect(page.locator('#open-letter')).toBeHidden();
+ await page.clock.runFor(7800);
+ await expect(page.locator('#open-letter')).toBeVisible();
+});
+test('uploaded MP3 filename is encoded correctly and decodes as real audio',async({page,request})=>{
+ await page.goto('/');
+ const url=await page.evaluate(()=>window.LOVE_AUDIO_URL);
+ expect(url).toContain('%23blue');
+ const response=await request.get('/'+url);
+ expect(response.ok()).toBe(true);
+ expect((await response.body()).length).toBe(168024);
+ const duration=await page.evaluate(()=>new Promise((resolve,reject)=>{
+   const probe=new Audio();
+   const timeout=setTimeout(()=>reject(new Error('Audio decode timed out')),10000);
+   probe.onloadedmetadata=()=>{clearTimeout(timeout);resolve(probe.duration);probe.removeAttribute('src');probe.load();};
+   probe.onerror=()=>{clearTimeout(timeout);reject(new Error('Uploaded MP3 could not decode'));};
+   probe.src=window.LOVE_AUDIO_URL;probe.preload='metadata';probe.load();
+ }));
+ expect(duration).toBeGreaterThan(1);
 });

@@ -9,47 +9,54 @@ window.LOVE_MEMORIES = [
     caption: 'My favourite place is beside you.'
   },
   {
-    image: 'assets/memories/memory-01.webp',
-    alt: 'Atik and Punom smiling together, dressed in pale green',
+    image: 'assets/portraits/memory-01.webp',
+    drawing: 'assets/portraits/memory-01.svg',
+    alt: 'Line-art portrait of Atik and Punom smiling together, dressed in pale green',
     caption: 'তোমার হাসিতেই আমার পৃথিবী রঙিন।'
   },
   {
-    image: 'assets/memories/memory-02.webp',
-    alt: 'Atik and Punom leaning close together in an evening selfie',
+    image: 'assets/portraits/memory-02.webp',
+    drawing: 'assets/portraits/memory-02.svg',
+    alt: 'Line-art portrait of Atik and Punom leaning close together in an evening selfie',
     caption: 'পাশে তুমি থাকলেই, সব মুহূর্ত সুন্দর।'
   },
   {
-    image: 'assets/memories/memory-03.webp',
-    alt: 'Atik kissing Punom on the forehead outdoors, with pink flowers in the foreground',
+    image: 'assets/portraits/memory-03.webp',
+    drawing: 'assets/portraits/memory-03.svg',
+    alt: 'Line-art portrait of Atik kissing Punom on the forehead outdoors, with pink flowers in the foreground',
     caption: 'এই আদরটুকু, শুধু তোমার জন্য।'
   },
   {
-    image: 'assets/memories/memory-04.webp',
-    alt: 'Punom playfully making bunny ears behind Atik in a field',
+    image: 'assets/portraits/memory-04.webp',
+    drawing: 'assets/portraits/memory-04.svg',
+    alt: 'Line-art portrait of Punom playfully making bunny ears behind Atik in a field',
     caption: 'তোমার সঙ্গে একটু দুষ্টুমি, অনেকটা ভালোবাসা।'
   },
   {
-    image: 'assets/memories/memory-05.webp',
-    alt: 'A close-up portrait of Atik and Punom resting their heads together',
+    image: 'assets/portraits/memory-05.webp',
+    drawing: 'assets/portraits/memory-05.svg',
+    alt: 'A close-up line-art portrait of Atik and Punom resting their heads together',
     caption: 'তোমার কাছেই আমার শান্তি।'
   },
   {
-    image: 'assets/memories/memory-06.webp',
-    alt: 'Atik kissing Punom on the forehead in a close-up selfie',
+    image: 'assets/portraits/memory-06.webp',
+    drawing: 'assets/portraits/memory-06.svg',
+    alt: 'Line-art portrait of Atik kissing Punom on the forehead in a close-up selfie',
     caption: 'হাজার কথার চেয়েও বেশি, এই একটুখানি আদর।'
   },
   {
-    image: 'assets/memories/memory-07.webp',
-    alt: 'Punom in pink and white, with Atik in a red shirt behind her outdoors',
+    image: 'assets/portraits/memory-07.webp',
+    drawing: 'assets/portraits/memory-07.svg',
+    alt: 'Line-art portrait of Punom in pink and white, with Atik in a red shirt behind her outdoors',
     caption: 'আমার প্রতিটা গল্পে, তুমি।'
   },
   {
-    image: 'assets/memories/memory-08.webp',
-    alt: 'Atik and Punom smiling close together beside a green tree under a blue sky',
+    image: 'assets/portraits/memory-08.webp',
+    drawing: 'assets/portraits/memory-08.svg',
+    alt: 'Line-art portrait of Atik and Punom smiling close together beside a green tree under a blue sky',
     caption: 'আজও তুমি, আগামীকালও তুমি।'
   }
 ];
 
-// Set this to the uploaded audio file once it has been supplied. A YouTube page is not an audio URL.
-// Example: window.LOVE_AUDIO_URL = 'assets/our-song.mp3';
-window.LOVE_AUDIO_URL = '';
+// Uploaded song. Encode the filename so # characters are not treated as URL fragments.
+window.LOVE_AUDIO_URL = 'assets/' + encodeURIComponent('Yung Kai - Blue (Lyrics) #blue #liveperformance #shorts #shortsfeed #viralvideo.mp3');
