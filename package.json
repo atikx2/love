@@ -1,0 +1,26 @@
+{
+  "name": "atik-punom-love",
+  "version": "1.0.0",
+  "description": "A little universe for Atik and Punom",
+  "scripts": {
+    "test": "playwright test",
+    "start": "python3 -m http.server 3000 --bind 0.0.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atikx2/love.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/atikx2/love/issues"
+  },
+  "homepage": "https://github.com/atikx2/love#readme",
+  "devDependencies": {
+    "@fontsource/noto-sans-bengali": "^5.3.0",
+    "@playwright/test": "^1.64.1",
+    "@sparticuz/chromium": "^153.0.0"
+  },
+  "private": true
+}

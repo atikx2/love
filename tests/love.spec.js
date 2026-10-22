@@ -1,0 +1,30 @@
+const {test,expect}=require('@playwright/test');
+test('portrait, letter, replay and sound work without overflow',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/');
+ await expect(page).toHaveTitle(/Atik & Punom/);
+ await expect(page.locator('#portrait svg')).toBeVisible();
+ expect(await page.locator('#portrait path').count()).toBeGreaterThan(30);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.getByRole('button',{name:/A little letter/}).click();
+ await expect(page.getByRole('dialog')).toBeVisible();
+ await expect(page.getByRole('heading',{name:'আমার সোনা পাখি,'})).toBeVisible();
+ await page.getByRole('button',{name:'Close letter'}).click();
+ await expect(page.getByRole('dialog')).not.toBeVisible();
+ await page.locator('#replay').click();
+ await expect(page.locator('#drawing-status')).toHaveText('Drawing our little forever…');
+ await page.locator('#sound').click();
+ await expect(page.locator('#sound')).toHaveAttribute('aria-pressed','true');
+ await page.locator('#sound').click();
+ await expect(page.locator('#sound')).toHaveAttribute('aria-pressed','false');
+ await page.locator('#open-letter').click();
+ await page.keyboard.press('Escape');
+ await expect(page.getByRole('dialog')).not.toBeVisible();
+ expect(errors).toEqual([]);
+});
+test('reduced motion immediately reveals portrait',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/');
+ await expect(page.locator('#portrait')).toHaveClass(/done/);
+ await expect(page.locator('#drawing-status')).toHaveText('You & me. A beautiful forever.');
+});
