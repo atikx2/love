@@ -3,7 +3,10 @@ Requires opencv-python-headless. The original personal photo is not stored here.
 """
 from pathlib import Path
 import cv2
-img = cv2.imread('assets/portrait.png')
+img = cv2.imread('assets/portrait.png', cv2.IMREAD_UNCHANGED)
+if img.shape[2] == 4:
+    alpha = img[:, :, 3:4].astype('float32') / 255
+    img = (img[:, :, :3] * alpha).astype('uint8')
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 _, mask = cv2.threshold(gray, 95, 255, cv2.THRESH_BINARY)
 contours, _ = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
