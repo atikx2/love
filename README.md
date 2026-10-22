@@ -8,6 +8,10 @@ After GitHub Pages deployment: **https://atikx2.github.io/love/**
 
 GitHub → Actions → **Deploy love story** shows deployment progress. Pages must use **GitHub Actions** as its source (Settings → Pages → Build and deployment). The workflow supports `main` and this Arena session branch.
 
+### One-time mobile setup if Pages is not enabled
+
+The connected GitHub integration may not have permission to enable Pages. The repository owner can open **Settings → Pages**, choose **Deploy from a branch**, select **arena/61a8aab7-love**, choose **/ (root)**, and tap **Save**. GitHub then builds the same static site without needing to merge any branch. Allow a few minutes for the first deployment. Alternatively enable **GitHub Actions** as source and rerun the deployment workflow for this branch.
+
 ## Local preview
 
 ```sh
