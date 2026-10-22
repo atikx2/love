@@ -7,14 +7,14 @@
   <meta name="description" content="A little corner of the universe, made by Atik for Punom. I Love You Sona Pakhi.">
   <title>Atik & Punom · A love, forever.</title>
   <link rel="icon" href="assets/heart.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=story-entry-1">
 </head>
-<body>
+<body class="story-locked">
   <div class="ambient" aria-hidden="true"></div>
   <div id="stars" aria-hidden="true"></div>
   <header class="site-header">
     <a class="monogram" href="./" aria-label="Atik and Punom home">a<span>♡</span>p<span class="brand-caption">OUR LITTLE UNIVERSE</span></a>
-    <button id="sound" class="sound-button" type="button" aria-pressed="false"><span class="sound-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span id="sound-label" aria-live="polite">Tap for music</span></button>
+    <button id="sound" class="sound-button" type="button" hidden aria-pressed="false"><span class="sound-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span id="sound-label" aria-live="polite">Tap for music</span></button>
   </header>
   <main>
     <section class="hero" aria-labelledby="title">
@@ -24,11 +24,11 @@
         <p class="dedication">আমার পৃথিবীটা তোমাকে ঘিরেই, পুনম।<br>তুমি আছো বলেই সবকিছু এত সুন্দর।</p>
         <div class="names"><span>Atik</span><span class="name-heart" aria-label="loves">♡</span><span>Punom</span></div>
         <p class="love-line">I Love You Sona Pakhi <span>♥ ♥</span></p>
-        <a class="discover-link" href="#our-portrait">Watch our story unfold <span aria-hidden="true">↓</span></a>
-        <p class="button-note">A portrait. A promise. A little piece of forever.</p>
+        <button id="enter-story" class="discover-link" type="button" aria-controls="our-portrait" aria-expanded="false">Open Our Little Forever <span aria-hidden="true">♡</span></button>
+        <p class="button-note">Tap to begin our story, with music and a little magic.</p>
         <div class="story-flower" aria-hidden="true">✳<span>made for my favourite person</span></div>
       </div>
-      <div class="portrait-side" id="our-portrait">
+      <div class="portrait-side" id="our-portrait" hidden>
         <div class="orbit-label">TWO SOULS <span>✧</span> ONE BEAUTIFUL STORY</div>
         <div class="portrait-frame" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Our memories">
           <div class="art-halo" aria-hidden="true"></div>
@@ -52,9 +52,9 @@
         <div class="portrait-caption"><span class="caption-line"></span><p>My favourite place is <em>beside you.</em></p><span class="caption-line"></span></div>
       </div>
     </section>
-    <div class="forever-strip"><span>YOU & ME</span><span class="strip-line"></span><span class="strip-message">একসাথে, প্রতিটা আগামীতে।</span><span class="strip-line"></span><span>ALWAYS & FOREVER</span></div>
+    <div class="forever-strip" id="forever-strip" hidden><span>YOU & ME</span><span class="strip-line"></span><span class="strip-message">একসাথে, প্রতিটা আগামীতে।</span><span class="strip-line"></span><span>ALWAYS & FOREVER</span></div>
   </main>
-  <footer><span>Made with <span class="footer-heart">♥</span> by Atik, for Punom</span><span>A love, forever. <span class="footer-spark">✧</span></span></footer>
+  <footer id="site-footer" hidden><span>Made with <span class="footer-heart">♥</span> by Atik, for Punom</span><span>A love, forever. <span class="footer-spark">✧</span></span></footer>
   <dialog id="letter" aria-labelledby="letter-title">
     <button class="close-letter" id="close-letter" aria-label="Close letter" type="button">×</button>
     <div class="letter-decoration" aria-hidden="true">♡</div>
@@ -66,6 +66,6 @@
   </dialog>
   <div id="celebration" aria-hidden="true"></div>
   <script src="memories.js?v=soft-smile-1" defer></script>
-  <script src="app.js" defer></script>
+  <script src="app.js?v=story-entry-1" defer></script>
 </body>
 </html>

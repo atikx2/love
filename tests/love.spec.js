@@ -1,6 +1,7 @@
 const {test,expect}=require('@playwright/test');
 const letterText = 'পুনম,তোমাকে ভালোবাসি—কথাটা ছোট, কিন্তু এর ভেতরেই আমার পুরো পৃথিবীটা লুকিয়ে আছে। তোমার হাসি, তোমার পাশে থাকা, তোমার সঙ্গে কাটানো ছোট্ট ছোট্ট মুহূর্তগুলোই আমার সবচেয়ে বড় পাওয়া।সব দিন একরকম হবে না। তবু প্রতিটা দিন, প্রতিটা গল্পে, আমি তোমার হাতটাই ধরে রাখতে চাই। আজ, আগামীকাল, আর আমাদের সবগুলো আগামীতে।তুমি শুধু আমার ভালোবাসা নও,তুমি আমার ঘর।';
 async function revealPortrait(page) {
+  if (await page.locator('#enter-story').getAttribute('aria-expanded') === 'false') await page.locator('#enter-story').click();
   await page.locator('#portrait').scrollIntoViewIfNeeded();
   await expect(page.locator('#portrait')).toHaveClass(/started/);
 }
@@ -119,23 +120,29 @@ async function audioFixture(page, allowAutoplay) {
  }, {allowAutoplay});
  await page.route('**/memories.js*',route=>route.fulfill({contentType:'application/javascript',body:`window.LOVE_MEMORIES=[{image:'assets/portrait-gold.webp',drawing:'assets/portrait.svg',alt:'Our portrait',caption:'Our forever'}];window.LOVE_AUDIO_URL='assets/test-song.mp3';`}));
 }
-test('configured song attempts autoplay and falls back to a genuine tap; mute stays muted',async({page})=>{
+test('entry button starts the configured song from a real tap and mute stays muted',async({page})=>{
  await audioFixture(page,false);
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto('/');
- await expect(page.locator('#sound-label')).toHaveText('Tap for music');
- expect(await page.evaluate(()=>window.__audioStats.attempts)).toBe(1);
+ expect(await page.evaluate(()=>window.__audioStats.attempts)).toBe(0);
+ await expect(page.locator('#sound')).toBeHidden();
+ await expect(page.locator('#our-portrait')).toBeHidden();
  await page.locator('.discover-link').click();
  await expect(page.locator('#sound')).toHaveAttribute('aria-pressed','true');
+ expect(await page.evaluate(()=>window.__audioStats.attempts)).toBe(1);
  await page.locator('#sound').click();
  await expect(page.locator('#sound')).toHaveAttribute('aria-pressed','false');
  await page.locator('#replay').click();
+ await page.locator('#enter-story').click();
  await expect(page.locator('#sound-label')).toHaveText('Sound off');
  expect(await page.evaluate(()=>window.__audioStats.playing)).toBe(false);
 });
-test('configured song starts immediately when autoplay is permitted',async({page})=>{
+test('even when autoplay is permitted, music and content wait for entry',async({page})=>{
  await audioFixture(page,true);
  await page.goto('/');
+ expect(await page.evaluate(()=>window.__audioStats.attempts)).toBe(0);
+ await expect(page.locator('#our-portrait')).toBeHidden();
+ await page.locator('#enter-story').click();
  await expect(page.locator('#sound')).toHaveAttribute('aria-pressed','true');
  expect(await page.evaluate(()=>window.__audioStats.playing)).toBe(true);
  await page.locator('#sound').click();
@@ -213,4 +220,38 @@ test('uploaded MP3 filename is encoded correctly and decodes as real audio',asyn
    probe.src=window.LOVE_AUDIO_URL;probe.preload='metadata';probe.load();
  }));
  expect(duration).toBeGreaterThan(1);
+});
+
+test('entry gate cannot be bypassed by scrolling, a hash link or unrelated taps',async({page})=>{
+ await audioFixture(page,true);
+ const requests=[];
+ page.on('request',req=>{if(/\.(svg|webp)(\?|$)/.test(req.url()) && !req.url().includes('heart.svg'))requests.push(req.url());});
+ await page.goto('/#our-portrait');
+ await page.locator('#title').click();
+ await page.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));
+ await page.waitForTimeout(250);
+ await expect(page.locator('#our-portrait')).toBeHidden();
+ await expect(page.locator('#forever-strip')).toBeHidden();
+ await expect(page.locator('#site-footer')).toBeHidden();
+ await expect(page.locator('#sound')).toBeHidden();
+ expect(await page.locator('#portrait svg').count()).toBe(0);
+ expect(await page.evaluate(()=>window.__audioStats.attempts)).toBe(0);
+ expect(requests).toEqual([]);
+ await page.locator('#enter-story').click();
+ await expect(page.locator('#our-portrait')).toBeVisible();
+ await expect(page.locator('#forever-strip')).toBeVisible();
+ await expect(page.locator('#site-footer')).toBeVisible();
+ await expect(page.locator('#enter-story')).toHaveAttribute('aria-expanded','true');
+ await page.reload();
+ await expect(page.locator('#our-portrait')).toBeHidden();
+});
+test('entry button also unlocks music and the gallery with a keyboard',async({page})=>{
+ await audioFixture(page,false);
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/');
+ const button=page.getByRole('button',{name:'Open Our Little Forever'});
+ await button.focus();await page.keyboard.press('Enter');
+ await expect(page.locator('#sound')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#portrait')).toHaveClass(/started/);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });

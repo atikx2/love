@@ -1,5 +1,7 @@
 'use strict';
 const portrait = document.querySelector('#portrait');
+const entryButton = document.querySelector('#enter-story');
+let storyUnlocked = false;
 const statusText = document.querySelector('#drawing-status');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const invitation = document.querySelector('#open-letter');
@@ -70,12 +72,12 @@ function tick(now) {
   else lastFrame = 0;
 }
 function resumeDrawing() {
-  if (!inView || !ready || document.hidden || letter.open) return;
+  if (!storyUnlocked || !inView || !ready || document.hidden || letter.open) return;
   portrait.classList.add('started', 'is-playing');
   if (!frameId) { lastFrame = 0; frameId = setTimeout(() => tick(performance.now()), 100); }
 }
 async function loadMemory() {
-  if (loading || !memories.length) return;
+  if (!storyUnlocked || loading || !memories.length) return;
   loading = true;
   const version = ++renderVersion;
   const memory = memories[index];
@@ -131,7 +133,7 @@ function selectMemory(nextIndex) {
   loadMemory();
 }
 const observer = new IntersectionObserver(entries => {
-  inView = entries[0].isIntersecting && entries[0].intersectionRatio >= .4;
+  inView = storyUnlocked && entries[0].isIntersecting && entries[0].intersectionRatio >= .4;
   portrait.parentElement.classList.toggle('outside-view', !inView);
   if (inView) {
     if (!ready && !loading && !failed) loadMemory();
@@ -212,8 +214,8 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) pauseDrawing(); else resumeDrawing();
 });
 reducedMotion.addEventListener('change', () => {if (reducedMotion.matches) {autoplay = false; updateNavigation();} resumeDrawing();});
-// Browsers decide whether audible autoplay is allowed. Try it, then unlock on a
-// real tap/keypress if needed. YouTube pages cannot be used as HTML audio sources.
+// Music starts only from the entry button (a real browser user gesture).
+// Never attempt autoplay or unlock from unrelated taps before entering.
 const soundButton = document.querySelector('#sound');
 const soundLabel = document.querySelector('#sound-label');
 const audioURL = window.LOVE_AUDIO_URL || '';
@@ -221,7 +223,7 @@ const song = audioURL ? new Audio(audioURL) : null;
 if (song) { song.loop = true; song.preload = 'none'; song.volume = .55; }
 else soundButton.title = 'Temporary music-box melody; the requested audio has not been supplied yet.';
 let audioContext, melodyTimer, musicPlaying = false, musicStarting = false;
-let musicWanted = true, musicEpoch = 0, pausedForVisibility = false;
+let musicWanted = false, musicEpoch = 0, pausedForVisibility = false;
 const activeNotes = new Set();
 const melody = [261.63,329.63,392,523.25,440,392,329.63,293.66,261.63,329.63,392,440,392,329.63,293.66,261.63];
 let noteIndex = 0;
@@ -254,7 +256,7 @@ function stopMusic(userInitiated = false) {
   setSoundState(false, userInitiated ? 'Sound off' : 'Tap for music');
 }
 async function startMusic(fromGesture = false) {
-  if (musicPlaying || musicStarting || document.hidden) return;
+  if (!storyUnlocked || musicPlaying || musicStarting || document.hidden) return;
   musicWanted = true;
   musicStarting = true;
   const epoch = ++musicEpoch;
@@ -287,15 +289,25 @@ soundButton.addEventListener('click', () => {
   if (musicPlaying || musicStarting) stopMusic(true);
   else startMusic(true);
 });
-// Start on the visitor's first genuine interaction if the initial attempt was
-// blocked. Never restart after the visitor deliberately mutes the music.
-function unlockMusic(event) {
-  if (event.target instanceof Element && event.target.closest('#sound')) return;
-  if (event.type === 'keydown' && !['Enter',' '].includes(event.key)) return;
-  if (musicWanted && !musicPlaying && !musicStarting) startMusic(true);
-}
-document.addEventListener('pointerdown', unlockMusic, {passive:true});
-document.addEventListener('keydown', unlockMusic);
+entryButton.addEventListener('click', () => {
+  if (!storyUnlocked) {
+    storyUnlocked = true;
+    // Call play() directly in this click, before any fetch, timer or await. This
+    // keeps the user activation needed by mobile Chrome/Safari for audible audio.
+    void startMusic(true);
+    document.querySelector('#our-portrait').hidden = false;
+    document.querySelector('#forever-strip').hidden = false;
+    document.querySelector('#site-footer').hidden = false;
+    soundButton.hidden = false;
+    entryButton.setAttribute('aria-expanded', 'true');
+    document.body.classList.remove('story-locked');
+  }
+  const frame = document.querySelector('.portrait-frame');
+  frame.focus({preventScroll:true});
+  document.querySelector('#our-portrait').scrollIntoView({
+    behavior: reducedMotion.matches ? 'instant' : 'smooth', block:'start'
+  });
+});
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     pausedForVisibility = musicPlaying || musicStarting;
@@ -305,4 +317,3 @@ document.addEventListener('visibilitychange', () => {
     startMusic(false);
   }
 });
-startMusic(false);

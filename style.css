@@ -170,3 +170,19 @@ body.modal-open { overflow: hidden; }
   html { scroll-behavior: auto; }*, *::before, *::after { animation: none !important; transition: none !important; }
   .portrait-art.started path { stroke-dashoffset: 0; }.floating-heart { display: none; }.portrait-art.is-photo.started .portrait-finished { transform: none; opacity: 1; }
 }
+/* A true entry screen: hidden attributes keep the album out of the page,
+   keyboard navigation and accessibility tree until its dedicated button is used. */
+.story-locked .hero {
+  display: flex; justify-content: center; text-align: center;
+  min-height: calc(100svh - 120px); padding: 24px 28px 70px;
+}
+.story-locked .story { width: 100%; max-width: 680px; }
+.story-locked .eyebrow, .story-locked .names, .story-locked .story-flower { justify-content: center; }
+.story-locked h1 { font-size: clamp(46px, 5.5vw, 72px); }
+.discover-link { justify-content: center; }
+@media (max-width: 1000px) { .story-locked .hero { min-height: calc(100svh - 100px); } }
+@media (max-width: 640px) {
+  .story-locked .hero { min-height: calc(100svh - 88px); padding: 30px 28px 45px; }
+  .story-locked h1 { font-size: clamp(43px, 12vw, 50px); }
+}
+.story-locked .ambient, .story-locked #stars { height: 100svh; }
