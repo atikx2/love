@@ -25,7 +25,7 @@ Open http://localhost:3000. Use a server rather than opening `index.html` direct
 - Names, dedication and the letter: `index.html`.
 - Colors, layout and animation: `style.css`.
 - Drawing, viewport visibility, replay, slideshow, hearts and opt-in synthesized music: `app.js`.
-- Gallery entries: `memories.js`. Only one illustration has been supplied so far; no duplicate/fake memories are shown. Add approved photos to `assets/` and list their relative paths, alt text and captions here. New photos get a wipe/zoom reveal; entries with a `drawing` SVG get line animation.
+- Gallery entries: `memories.js`. The gallery contains the original illustration followed by eight user-supplied photos in `assets/memories/`. Add future approved photos here with their relative paths, alt text and captions. New photos get a wipe/zoom reveal; entries with a `drawing` SVG get line animation.
 - For multiple memories: swipe horizontally, use previous/next arrows, dot buttons, or focus the frame and press Left/Right. Autoplay changes slides eight seconds **after** each full reveal; it pauses offscreen, in background tabs, and while the letter is open. The pause button gives explicit control. Autoplay defaults off for reduced motion.
 - Illustration assets are fetched only when at least 40% of the art is visible. Drawing pauses offscreen; the letter appears after the drawing and image crossfade finish. Replay hides the letter until completion again. Reduced-motion visitors get an immediate reveal on entering the viewport.
 - `assets/portrait-gold.webp` is the optimized transparent portrait for the dark background (about 141 KB vs 751 KB for the source PNG). The old rose variant is retained as a source asset only.
@@ -39,6 +39,14 @@ No third-party runtime scripts, remote fonts, analytics, or tracking. Bengali te
 The supplied YouTube Shorts link has **not** been downloaded or used as audio. The requested audio file has not been supplied yet. The current music is the original locally generated music-box placeholder, not the sound from that video.
 
 Once Atik supplies an audio file he is allowed to publish, add it under `assets/` and set `window.LOVE_AUDIO_URL` in `memories.js` to its relative path (MP3/M4A recommended). This uses a looping HTML audio player instead of the placeholder. A YouTube watch/Shorts URL is not an audio-file URL. Audible autoplay remains subject to browser policy: no code can promise sound on page opening in every mobile browser. Blocked autoplay gets a real-gesture fallback, with no fake playing indicator.
+
+## Supplied photo album
+
+The eight photos supplied by Atik are included as optimized WebP derivatives, with the original full framing retained via `object-fit: contain` (landscape, square and portrait images are not cropped). The original JPEGs are not committed. Exported images contain no EXIF/GPS metadata. The eight derivatives total about **1.2 MB**, approximately **95% smaller** than the supplied JPEGs combined.
+
+**Privacy:** these eight photographs, names and the personal letter are visible on the public GitHub Pages site and in the public repository. Only the earlier source selfie used for the illustration remains excluded from the deployment.
+
+The current image loads on demand; after its reveal completes, just the next image is prefetched, unless Save-Data or a 2G connection is detected. The entire album is never eagerly loaded at startup.
 
 ## Mobile performance
 

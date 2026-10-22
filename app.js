@@ -12,6 +12,7 @@ const dots = document.querySelector('#gallery-dots');
 let index = 0, inView = false, ready = false, loading = false, failed = false;
 let elapsed = 0, lastFrame = 0, frameId = 0, renderVersion = 0;
 let drawingDuration = 6200, revealDuration = 7300;
+let nextPreview;
 let autoplay = !reducedMotion.matches, completed = false;
 portrait.setAttribute('aria-busy', 'false');
 function updateNavigation() {
@@ -45,6 +46,14 @@ function finishDrawing() {
     invitation.hidden = false;
     portrait.setAttribute('aria-busy', 'false');
     statusText.textContent = 'You & me. A beautiful forever.';
+    // Warm only the next image after completion. Respect metered/slow data modes;
+    // never fetch the whole album at startup or before the portrait is in view.
+    const connection = navigator.connection;
+    if (memories.length > 1 && !connection?.saveData && !['slow-2g','2g'].includes(connection?.effectiveType)) {
+      nextPreview = new Image();
+      nextPreview.decoding = 'async';
+      nextPreview.src = memories[(index + 1) % memories.length].image;
+    }
   }
 }
 function tick(now) {

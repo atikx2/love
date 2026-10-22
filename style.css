@@ -80,7 +80,7 @@ h1 em { font-weight: 400; color: var(--rose); background: linear-gradient(100deg
 .portrait-art.done path { animation: none; stroke-dashoffset: 0; }
 .outside-view .envelope { animation-play-state: paused; }
 .portrait-art.done svg { opacity: 0; visibility: hidden; transition: opacity .8s, visibility 0s .8s; }
-.portrait-art.is-photo .portrait-finished { object-fit: cover; transform: scale(1.06); opacity: 0; animation: photo-reveal 3s ease forwards; animation-play-state: paused; }
+.portrait-art.is-photo .portrait-finished { object-fit: contain; background: #0c0d13; transform: scale(.98); opacity: 0; animation: photo-reveal 3s ease forwards; animation-play-state: paused; }
 .portrait-art.is-photo.is-playing .portrait-finished { animation-play-state: running; }
 .portrait-art.is-photo.done .portrait-finished { transform: scale(1); opacity: 1; animation: none; }
 .portrait-art.svg-only.done svg { opacity: 1; visibility: visible; }
@@ -97,18 +97,19 @@ h1 em { font-weight: 400; color: var(--rose); background: linear-gradient(100deg
 .invitation-label { font-size: 10px; line-height: 1.7; letter-spacing: .2px; background: #211823; padding: 6px 11px; border: 1px solid #c79aae55; border-radius: 9px; color: #ecc7cf; }
 .invitation-label em { font-family: var(--serif); font-size: 12px; }
 .letter-invitation:hover .envelope, .letter-invitation:focus-visible .envelope { animation-play-state: paused; }
-.gallery-nav { display: flex; align-items: center; justify-content: center; gap: 21px; margin-top: 21px; min-height: 40px; }
+.gallery-nav { display: grid; grid-template-columns: 40px minmax(0, 1fr) 40px 40px; align-items: center; gap: 8px; max-width: 350px; margin: 21px auto 0; min-height: 40px; }
+.gallery-nav:has(#gallery-autoplay[hidden]) { grid-template-columns: 40px minmax(0, 1fr) 40px; }
 .gallery-nav > button { border: 1px solid #bda6bd30; width: 40px; height: 40px; border-radius: 50%; background: #ffffff04; font-size: 17px; transition: border-color .2s; }
 .gallery-nav > button:hover:not(:disabled) { border-color: var(--gold); }
-.gallery-indicator { text-align: center; min-width: 55px; }
+.gallery-indicator { text-align: center; min-width: 0; }
 .gallery-count { font-size: 9px; color: #ab91a4; letter-spacing: 2px; }
 .gallery-dots { display: flex; gap: 2px; justify-content: center; margin-top: 1px; }
-.gallery-dots button { width: 16px; height: 20px; border: 0; padding: 0; background: transparent; position: relative; }
+.gallery-dots button { flex: 0 1 16px; min-width: 0; width: 16px; height: 20px; border: 0; padding: 0; background: transparent; position: relative; }
 .gallery-dots button::after { content: ''; position: absolute; width: 5px; height: 5px; inset: 8px auto auto 5px; background: #655164; border-radius: 20px; }
 .gallery-dots button[aria-current=true]::after { background: var(--rose); width: 14px; left: 1px; }
 .gallery-hint { font-size: 8px; color: #9f879a; text-align: center; letter-spacing: .8px; margin: 10px 0 0; }
 .portrait-caption { display: flex; gap: 12px; align-items: center; justify-content: center; margin-top: 19px; }
-.portrait-caption p { font: 13px var(--serif); color: #b8a2b0; text-align: center; margin: 0; }
+.portrait-caption p { font: 13px/1.8 Georgia, 'Noto Sans Bengali', serif; color: #b8a2b0; text-align: center; margin: 0; }
 .portrait-caption em { color: var(--gold); }
 .caption-line { width: 20px; flex-shrink: 0; height: 1px; background: #bda38833; }
 .forever-strip { display: flex; align-items: center; gap: 24px; margin: 0 64px; padding: 26px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: 8px; letter-spacing: 2px; color: #aa94a6; }

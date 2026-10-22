@@ -43,8 +43,9 @@ test('reduced motion reveals immediately on arrival and dialog supports Escape',
  await page.locator('#open-letter').click();
  await page.keyboard.press('Escape');
  await expect(page.getByRole('dialog')).not.toBeVisible();
- await expect(page.locator('#previous-memory')).toBeDisabled();
- await expect(page.locator('#next-memory')).toBeDisabled();
+ await expect(page.locator('#previous-memory')).toBeEnabled();
+ await expect(page.locator('#next-memory')).toBeEnabled();
+ await expect(page.locator('#gallery-count')).toHaveText('01 / 09');
 });
 async function multiMemoryFixture(page) {
  await page.route('**/memories.js',route=>route.fulfill({contentType:'application/javascript',body:`window.LOVE_MEMORIES=[{image:'assets/portrait-rose.png',drawing:'assets/portrait.svg',alt:'First memory',caption:'First memory'},{image:'assets/portrait-rose.png',alt:'Second memory',caption:'Second memory'}];`}));
@@ -139,4 +140,36 @@ test('configured song starts immediately when autoplay is permitted',async({page
  expect(await page.evaluate(()=>window.__audioStats.playing)).toBe(true);
  await page.locator('#sound').click();
  expect(await page.evaluate(()=>window.__audioStats.playing)).toBe(false);
+});
+test('all eight supplied photos decode, preserve full framing and wrap back to the portrait', async({page}) => {
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/');await revealPortrait(page);
+ await expect(page.locator('#gallery-dots button')).toHaveCount(9);
+ for (let i=1;i<=8;i++) {
+   await page.locator('#next-memory').click();
+   await expect(page.locator('#gallery-count')).toHaveText(`${String(i+1).padStart(2,'0')} / 09`);
+   await expect(page.locator('#portrait')).toHaveClass(/done/);
+   const image=page.locator('#portrait .portrait-finished');
+   await expect(image).toHaveAttribute('src',`assets/memories/memory-${String(i).padStart(2,'0')}.webp`);
+   expect(await image.evaluate(el=>el.complete && el.naturalWidth>0)).toBe(true);
+   await expect(image).toHaveCSS('object-fit','contain');
+   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ }
+ await page.locator('#next-memory').click();
+ await expect(page.locator('#gallery-count')).toHaveText('01 / 09');
+ await expect(page.locator('#portrait svg')).toBeAttached();
+ await expect(page.locator('#portrait')).toHaveClass(/done/);
+});
+test('nine-dot gallery fits small phones and does not eagerly download the whole album',async({page})=>{
+ await page.setViewportSize({width:320,height:740});
+ await page.emulateMedia({reducedMotion:'reduce'});
+ const photos=[];
+ page.on('request',req=>{if(req.url().includes('/assets/memories/'))photos.push(req.url());});
+ await page.goto('/');
+ expect(photos).toEqual([]);
+ await revealPortrait(page);
+ await expect(page.locator('#open-letter')).toBeVisible();
+ expect(new Set(photos).size).toBeLessThanOrEqual(1);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await expect(page.locator('#gallery-dots button')).toHaveCount(9);
 });
