@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0b1113">
+  <meta name="theme-color" content="#fff1f2">
   <meta name="description" content="A little corner of the universe, made by Atik for Punom. I Love You Sona Pakhi.">
   <title>Atik & Punom · A love, forever.</title>
   <link rel="icon" href="assets/heart.svg" type="image/svg+xml">
@@ -24,18 +24,31 @@
         <p class="dedication">আমার পৃথিবীটা তোমাকে ঘিরেই, পুনম।<br>তুমি আছো বলেই সবকিছু এত সুন্দর।</p>
         <div class="names"><span>Atik</span><span class="name-heart" aria-label="loves">♡</span><span>Punom</span></div>
         <p class="love-line">I Love You Sona Pakhi <span>♥ ♥</span></p>
-        <button class="letter-button" id="open-letter" type="button"><span aria-hidden="true">✉</span> A little letter for you <span aria-hidden="true">↗</span></button>
-        <p class="button-note">Written with love. Only for you.</p>
+        <a class="discover-link" href="#our-portrait">Watch our story unfold <span aria-hidden="true">↓</span></a>
+        <p class="button-note">A portrait. A promise. A little piece of forever.</p>
+        <div class="story-flower" aria-hidden="true">✳<span>made for my favourite person</span></div>
       </div>
-      <div class="portrait-side">
+      <div class="portrait-side" id="our-portrait">
         <div class="orbit-label">TWO SOULS <span>✧</span> ONE BEAUTIFUL STORY</div>
-        <div class="portrait-frame">
+        <div class="portrait-frame" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Our memories">
+          <div class="art-halo" aria-hidden="true"></div>
           <span class="corner c-tl"></span><span class="corner c-tr"></span><span class="corner c-bl"></span><span class="corner c-br"></span>
           <div class="frame-top"><span class="live-dot"></span> OUR LOVE, IN EVERY LINE <span class="tiny-spark">✦</span></div>
           <div class="portrait-art" id="portrait" role="img" aria-label="Line-art portrait of Atik and Punom, drawn from their photo"></div>
           <span class="portrait-heart" aria-hidden="true">♡</span>
-          <div class="frame-bottom"><span id="drawing-status" role="status">Drawing our little forever…</span><button id="replay" type="button" aria-label="Replay portrait animation"><span aria-hidden="true">↻</span> Replay</button></div>
+          <button class="letter-button letter-invitation" id="open-letter" type="button" hidden aria-label="A little letter for you">
+            <span class="envelope" aria-hidden="true"><span class="envelope-flap"></span><span class="envelope-heart">♥</span></span>
+            <span class="invitation-label">A little letter<br><em>just for you</em> <span aria-hidden="true">↗</span></span>
+          </button>
+          <div class="frame-bottom"><span id="drawing-status" role="status">Scroll to draw our little forever</span><button id="replay" type="button" aria-label="Replay portrait animation"><span aria-hidden="true">↻</span> Replay</button></div>
         </div>
+        <div class="gallery-nav" aria-label="Memory navigation">
+          <button id="previous-memory" type="button" aria-label="Previous memory" disabled>←</button>
+          <div class="gallery-indicator"><span class="gallery-count" id="gallery-count">01 / 01</span><div id="gallery-dots" class="gallery-dots"></div></div>
+          <button id="next-memory" type="button" aria-label="Next memory" disabled>→</button>
+          <button id="gallery-autoplay" type="button" aria-label="Pause automatic slideshow" aria-pressed="false" hidden>Ⅱ</button>
+        </div>
+        <p class="gallery-hint" id="gallery-hint">One moment. A thousand feelings.</p>
         <div class="portrait-caption"><span class="caption-line"></span><p>My favourite place is <em>beside you.</em></p><span class="caption-line"></span></div>
       </div>
     </section>
@@ -52,6 +65,7 @@
     <p class="letter-end">I Love You Sona Pakhi <span>♥ ♥</span></p>
   </dialog>
   <div id="celebration" aria-hidden="true"></div>
+  <script src="memories.js" defer></script>
   <script src="app.js" defer></script>
 </body>
 </html>

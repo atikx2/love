@@ -1,12 +1,12 @@
 # Atik & Punom — A love, forever.
 
-A mobile-first love letter for Punom: a hand-drawn-style animated couple portrait, a personal Bengali letter, floating hearts, and optional music-box audio.
+A mobile-first, rose/peach/lavender love story for Punom: scroll-triggered portrait drawing, a breathing envelope, an animated Bengali letter, floating hearts, and optional music-box audio. The original letter wording is unchanged.
 
 ## View online
 
 After GitHub Pages deployment: **https://atikx2.github.io/love/**
 
-GitHub → Actions → **Deploy love story** shows deployment progress. Pages must use **GitHub Actions** as its source (Settings → Pages → Build and deployment). The workflow supports `main` and this Arena session branch.
+The current Pages source is **Deploy from a branch → arena/61a8aab7-love → / (root)**. Pushing this branch updates the public site automatically. No settings changes are needed. If you later switch Pages to **GitHub Actions**, the included **Deploy love story** workflow supports `main` and this Arena session branch and can also be run manually.
 
 ### One-time mobile setup if Pages is not enabled
 
@@ -24,7 +24,11 @@ Open http://localhost:3000. Use a server rather than opening `index.html` direct
 
 - Names, dedication and the letter: `index.html`.
 - Colors, layout and animation: `style.css`.
-- Drawing, replay, hearts and opt-in synthesized music: `app.js`.
+- Drawing, viewport visibility, replay, slideshow, hearts and opt-in synthesized music: `app.js`.
+- Gallery entries: `memories.js`. Only one illustration has been supplied so far; no duplicate/fake memories are shown. Add approved photos to `assets/` and list their relative paths, alt text and captions here. New photos get a wipe/zoom reveal; entries with a `drawing` SVG get line animation.
+- For multiple memories: swipe horizontally, use previous/next arrows, dot buttons, or focus the frame and press Left/Right. Autoplay changes slides eight seconds **after** each full reveal; it pauses offscreen, in background tabs, and while the letter is open. The pause button gives explicit control. Autoplay defaults off for reduced motion.
+- Illustration assets are fetched only when at least 40% of the art is visible. Drawing pauses offscreen; the letter appears after the drawing and image crossfade finish. Replay hides the letter until completion again. Reduced-motion visitors get an immediate reveal on entering the viewport.
+- `assets/portrait-rose.png` is the rose-ink, transparent version used on the light background.
 - `assets/portrait.png` is an AI-created illustration based on the supplied photo; it is not an exact photographic likeness. `assets/portrait.svg` contains its traced outlines. The original private photo is **not** included in this repository or deployment. This is a public site: its illustration, names and message are public.
 - To regenerate SVG after editing the illustration, install `opencv-python-headless` in a Python virtual environment and run `scripts/trace-portrait.py` from the repository root.
 
